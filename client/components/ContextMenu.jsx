@@ -22,12 +22,21 @@ export default class ContextMenu extends PureComponent {
   }
 
   render() {
-    const {visible} = this.props;
+    const {visible, chunk: selectedChunk} = this.props;
     const containerClassName = cls({
       [s.container]: true,
       [s.hidden]: !visible
     });
     const multipleChunksSelected = store.selectedChunks.length > 1;
+    if (selectedChunk && !selectedChunk.isAsset) {
+      return (
+        <ul ref={this.saveNode} className={containerClassName} style={this.getStyle()}>
+          <ContextMenuItem onClick={this.handleClickHighlightDependents}>
+            Highlight Dependents
+          </ContextMenuItem>
+        </ul>
+      );
+    }
     return (
       <ul ref={this.saveNode} className={containerClassName} style={this.getStyle()}>
         <ContextMenuItem disabled={!multipleChunksSelected}
@@ -83,6 +92,12 @@ export default class ContextMenu extends PureComponent {
       e.stopPropagation();
       this.hide();
     }
+  }
+
+  handleClickHighlightDependents = () => {
+    const {chunk: selectedChunk} = this.props;
+    store.selectedDependent = selectedChunk;
+    this.hide();
   }
 
   hide() {

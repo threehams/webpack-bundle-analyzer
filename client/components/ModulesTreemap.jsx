@@ -183,6 +183,9 @@ export default class ModulesTreemap extends Component {
   }
 
   @computed get highlightedModules() {
+    if (store.selectedDependent) {
+      return new Set(store.dependentModules);
+    }
     return new Set(store.foundModules);
   }
 
@@ -260,7 +263,7 @@ export default class ModulesTreemap extends Component {
   handleTreemapGroupSecondaryClick = event => {
     const {group} = event;
 
-    if (group && group.isAsset) {
+    if (group) {
       this.setState({
         selectedChunk: group,
         selectedMouseCoords: {...this.mouseCoords},

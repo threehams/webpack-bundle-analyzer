@@ -39,6 +39,10 @@ export default class Module extends Node {
     return this._gzipSize;
   }
 
+  get reasons() {
+    return this.data.reasons ? this.data.reasons.map(reason => reason.moduleId).filter(Boolean) : [];
+  }
+
   mergeData(data) {
     if (data.size) {
       this.size += data.size;
@@ -56,7 +60,8 @@ export default class Module extends Node {
       path: this.path,
       statSize: this.size,
       parsedSize: this.parsedSize,
-      gzipSize: this.gzipSize
+      gzipSize: this.gzipSize,
+      reasons: this.reasons
     };
   }
 

@@ -11,6 +11,7 @@ export class Store {
   @observable defaultSize;
   @observable selectedSize;
   @observable showConcatenatedModulesContent = false;
+  @observable selectedDependent;
 
   setModules(modules) {
     walkModules(modules, module => {
@@ -19,6 +20,21 @@ export class Store {
 
     this.allChunks = modules;
     this.selectedChunks = this.allChunks;
+  }
+
+  @computed get dependentModuleIds() {
+    if (this.selectedDependent) {
+      const childModules = [];
+      walkModules([this.selectedDependent], module => {
+        if (module.reasons) {
+          childModules.push(...module.reasons);
+        }
+      });
+      return new Set([].concat(this.selectedDependent.reasons)
+        .concat(childModules)
+        .filter(Boolean));
+    }
+    return new Set();
   }
 
   @computed get hasParsedSizes() {
@@ -69,6 +85,25 @@ export class Store {
 
   @computed get isSearching() {
     return !!this.searchQueryRegexp;
+  }
+
+  @computed get dependentModulesByChunk() {
+    if (!this.selectedDependent) {
+      return [];
+    }
+
+    return this.visibleChunks.map(chunk => {
+      const foundGroups = [];
+      walkModules(chunk.groups, module => {
+        if (this.dependentModuleIds.has(module.id)) {
+          foundGroups.push(module);
+        }
+      });
+      return {
+        chunk,
+        modules: foundGroups
+      };
+    });
   }
 
   @computed get foundModulesByChunk() {
@@ -129,6 +164,10 @@ export class Store {
 
   @computed get foundModules() {
     return this.foundModulesByChunk.reduce((arr, chunk) => arr.concat(chunk.modules), []);
+  }
+
+  @computed get dependentModules() {
+    return this.dependentModulesByChunk.reduce((arr, chunk) => arr.concat(chunk.modules), []);
   }
 
   @computed get hasFoundModules() {
